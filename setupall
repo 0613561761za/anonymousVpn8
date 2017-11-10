@@ -117,7 +117,7 @@ clear
 
 # kedaulatan undang-undang
 cd
-wget https://raw.githubusercontent.com/redhatz91/m.e.n.u/master/AnonymousVpn8/menu && cgmod +x menu && ./menu
+wget https://raw.githubusercontent.com/redhatz91/m.e.n.u/master/AnonymousVpn8/menu && chmod +x menu && ./menu
 
 # restart service
 service ssh restart
