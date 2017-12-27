@@ -1,32 +1,43 @@
-#!/bin/bash
+#!/bin/sh
 
-if [[ $USER != "root" ]]; then
-	echo "Maaf, Anda harus menjalankan ini sebagai root"
-	exit
+#Requirement
+if [ ! -e /usr/bin/curl ]; then
+    apt-get -y update && apt-get -y upgrade
+	apt-get -y install curl
 fi
 
 # initialisasi var
 export DEBIAN_FRONTEND=noninteractive
 OS=`uname -m`;
-MYIP=$(wget -qO- ipv4.icanhazip.com);
+MYIP=$(curl -4 icanhazip.com)
+if [ $MYIP = "" ]; then
+   MYIP=`ifconfig | grep 'inet addr:' | grep -v inet6 | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | cut -d: -f2 | awk '{ print $1}' | head -1`;
+fi
 MYIP2="s/xxxxxxxxx/$MYIP/g";
-ether=`ifconfig | cut -c 1-8 | sort | uniq -u | grep venet0 | grep -v venet0:`
-if [[ $ether = "" ]]; then
-        ether=eth0
-fi
 
-#vps="zvur";
-vps="aneka";
-
-if [[ $vps = "zvur" ]]; then
-	source="http://scripts.gapaiasa.com"
-else
-	source="http://insomnet4u.me/d7fix"
+#check jika script sudah pernah diinput
+scriptname='sshvpn';
+mkdir -p /var/lib/setup-log
+echo " " >> /var/lib/setup-log/setup.txt
+scriptchecker=`cat /var/lib/setup-log/setup.txt | grep $scriptname`;
+if [ "$scriptchecker" != "" ]; then
+		clear
+		echo -e " ";
+		echo -e "Error! Anda sudah pernah memasukkan script ini sebelumnya";
+		echo -e "Script ini hanya boleh dimasukkan 1x saja!";
+		echo -e "---";
+		echo -e "Jika Anda sebelumnya gagal dalam instalasi, Mohon untuk reinstall OS VPS Anda lebih dulu!";
+		echo -e "Anda dapat mereinstall OS VPS Anda melalui VPS Control Panel";
+		echo -e "Cara Mengakses VPS Control Panel: bit.ly/caraaksesvpspanel";
+		echo -e " ";
+        exit 0;
+	else
+		echo "";
 fi
+echo "$scriptname" >> /var/lib/setup-log/setup.txt
 
 # go to root
 cd
-
 
 # disable ipv6
 echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
@@ -105,21 +116,17 @@ rm /etc/nginx/sites-enabled/default
 rm /etc/nginx/sites-available/default
 cat > /etc/nginx/nginx.conf <<END3
 user www-data;
-
 worker_processes 1;
 pid /var/run/nginx.pid;
-
 events {
 	multi_accept on;
   worker_connections 1024;
 }
-
 http {
 	gzip on;
 	gzip_vary on;
 	gzip_comp_level 5;
 	gzip_types    text/plain application/x-javascript text/xml text/css;
-
 	autoindex on;
   sendfile on;
   tcp_nopush on;
@@ -134,17 +141,14 @@ http {
   client_max_body_size 32M;
 	client_header_buffer_size 8m;
 	large_client_header_buffers 8 8m;
-
 	fastcgi_buffer_size 8m;
 	fastcgi_buffers 8 8m;
-
 	fastcgi_read_timeout 600;
-
   include /etc/nginx/conf.d/*.conf;
 }
 END3
 mkdir -p /home/vps/public_html
-wget -O /home/vps/public_html/index.html "http://insomnet4u.me/d7fix/index.html"
+wget -O /home/vps/public_html/index.html "https://github.com/AnonSecID7IlhamAhmadDevTeam/AutoScriptJualanSSH/raw/master/repo/index.html"
 echo "<?php phpinfo(); ?>" > /home/vps/public_html/info.php
 args='$args'
 uri='$uri'
@@ -157,12 +161,10 @@ server {
   access_log /var/log/nginx/vps-access.log;
   error_log /var/log/nginx/vps-error.log error;
   root   /home/vps/public_html;
-
   location / {
     index  index.html index.htm index.php;
     try_files $uri $uri/ /index.php?$args;
   }
-
   location ~ \.php$ {
     include /etc/nginx/fastcgi_params;
     fastcgi_pass  127.0.0.1:9000;
@@ -170,7 +172,6 @@ server {
     fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
   }
 }
-
 END4
 sed -i 's/listen = \/var\/run\/php5-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php5/fpm/pool.d/www.conf
 service php5-fpm restart
@@ -194,14 +195,14 @@ cp -u -p openssl-1.0.0.cnf openssl.cnf
 # ganti bits
 sed -i 's|export KEY_SIZE=1024|export KEY_SIZE=2048|' /etc/openvpn/easy-rsa/2.0/vars
 sed -i 's|export KEY_COUNTRY="US"|export KEY_COUNTRY="ID"|' /etc/openvpn/easy-rsa/2.0/vars
-sed -i 's|export KEY_PROVINCE="CA"|export KEY_PROVINCE="Jawa Tengah"|' /etc/openvpn/easy-rsa/2.0/vars
-sed -i 's|export KEY_CITY="SanFrancisco"|export KEY_CITY="Peleman"|' /etc/openvpn/easy-rsa/2.0/vars
-sed -i 's|export KEY_ORG="Fort-Funston"|export KEY_ORG="InsomNet4u.me"|' /etc/openvpn/easy-rsa/2.0/vars
+sed -i 's|export KEY_PROVINCE="CA"|export KEY_PROVINCE="Jawa Barat"|' /etc/openvpn/easy-rsa/2.0/vars
+sed -i 's|export KEY_CITY="SanFrancisco"|export KEY_CITY="Bandung"|' /etc/openvpn/easy-rsa/2.0/vars
+sed -i 's|export KEY_ORG="Fort-Funston"|export KEY_ORG="HostingTermurah.net"|' /etc/openvpn/easy-rsa/2.0/vars
 sed -i 's|export KEY_EMAIL="me@myhost.mydomain"|export KEY_EMAIL="sales@hostingtermurah.net"|' /etc/openvpn/easy-rsa/2.0/vars
-sed -i 's|export KEY_EMAIL=mail@host.domain|export KEY_EMAIL=sales@yaoming.com|' /etc/openvpn/easy-rsa/2.0/vars
-sed -i 's|export KEY_CN=changeme|export KEY_CN="InsomNet4u.me"|' /etc/openvpn/easy-rsa/2.0/vars
-sed -i 's|export KEY_NAME=changeme|export KEY_NAME=InsomNet4u.me|' /etc/openvpn/easy-rsa/2.0/vars
-sed -i 's|export KEY_OU=changeme|export KEY_OU=InsomNet4u|' /etc/openvpn/easy-rsa/2.0/vars
+sed -i 's|export KEY_EMAIL=mail@host.domain|export KEY_EMAIL=sales@hostingtermurah.net|' /etc/openvpn/easy-rsa/2.0/vars
+sed -i 's|export KEY_CN=changeme|export KEY_CN="HostingTermurah.net"|' /etc/openvpn/easy-rsa/2.0/vars
+sed -i 's|export KEY_NAME=changeme|export KEY_NAME=HostingTermurah.net|' /etc/openvpn/easy-rsa/2.0/vars
+sed -i 's|export KEY_OU=changeme|export KEY_OU=HostingTermurah|' /etc/openvpn/easy-rsa/2.0/vars
 # Buat PKI
 . /etc/openvpn/easy-rsa/2.0/vars
 . /etc/openvpn/easy-rsa/2.0/clean-all
@@ -254,6 +255,8 @@ cd /etc/openvpn/
 #Create OpenVPN Config
 mkdir -p /home/vps/public_html
 cat > /home/vps/public_html/client.ovpn <<-END
+# OpenVPN Configuration Dibuat Oleh HostingTermurah.net
+# (Official Partner VPS-Murah.net)
 client
 proto tcp
 persist-key
@@ -318,17 +321,17 @@ mkdir /var/lib/premium-script
 /etc/init.d/pptpd restart
 
 # install badvpn
-wget -O /usr/bin/badvpn-udpgw "http://insomnet4u.me/d7fix/badvpn-udpgw"
+wget -O /usr/bin/badvpn-udpgw "https://github.com/AnonSecID7IlhamAhmadDevTeam/AutoScriptJualanSSH/raw/master/repo/badvpn-udpgw"
 if [ "$OS" == "x86_64" ]; then
-  wget -O /usr/bin/badvpn-udpgw "http://insomnet4u.me/d7fix/badvpn-udpgw64"
+  wget -O /usr/bin/badvpn-udpgw "https://github.com/AnonSecID7IlhamAhmadDevTeam/AutoScriptJualanSSH/raw/master/repo/badvpn-udpgw64"
 fi
 sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300' /etc/rc.local
 chmod +x /usr/bin/badvpn-udpgw
 screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300
 
 # install mrtg
-wget -O /etc/snmp/snmpd.conf "http://insomnet4u.me/d7fix/snmpd.conf"
-wget -O /root/mrtg-mem.sh "http://insomnet4u.me/d7fix/mrtg-mem.sh"
+wget -O /etc/snmp/snmpd.conf "https://github.com/AnonSecID7IlhamAhmadDevTeam/AutoScriptJualanSSH/raw/master/repo/snmpd.conf"
+wget -O /root/mrtg-mem.sh "https://github.com/AnonSecID7IlhamAhmadDevTeam/AutoScriptJualanSSH/raw/master/repo/mrtg-mem.sh"
 chmod +x /root/mrtg-mem.sh
 cd /etc/snmp/
 sed -i 's/TRAPDRUN=no/TRAPDRUN=yes/g' /etc/default/snmpd
@@ -336,7 +339,7 @@ service snmpd restart
 snmpwalk -v 1 -c public localhost 1.3.6.1.4.1.2021.10.1.3.1
 mkdir -p /home/vps/public_html/mrtg
 cfgmaker --zero-speed 100000000 --global 'WorkDir: /home/vps/public_html/mrtg' --output /etc/mrtg.cfg public@localhost
-curl "http://insomnet4u.me/d7fix/mrtg.conf" >> /etc/mrtg.cfg
+curl "https://github.com/AnonSecID7IlhamAhmadDevTeam/AutoScriptJualanSSH/raw/master/repo/mrtg.conf" >> /etc/mrtg.cfg
 sed -i 's/WorkDir: \/var\/www\/mrtg/# WorkDir: \/var\/www\/mrtg/g' /etc/mrtg.cfg
 sed -i 's/# Options\[_\]: growright, bits/Options\[_\]: growright/g' /etc/mrtg.cfg
 indexmaker --output=/home/vps/public_html/mrtg/index.html /etc/mrtg.cfg
@@ -359,20 +362,22 @@ sed -i 's/DROPBEAR_EXTRA_ARGS=/DROPBEAR_EXTRA_ARGS="-p 109 -p 110"/g' /etc/defau
 echo "/bin/false" >> /etc/shells
 service ssh restart
 service dropbear restart
-# upgrade dropbear 2017
+#Upgrade to Dropbear 2016
+cd
 apt-get install zlib1g-dev
-wget https://matt.ucc.asn.au/dropbear/releases/dropbear-2017.75.tar.bz2
-bzip2 -cd dropbear-2017.75.tar.bz2  | tar xvf -
-cd dropbear-2017.75
+wget https://github.com/AnonSecID7IlhamAhmadDevTeam/AutoScriptJualanSSH/raw/master/repo/dropbear/dropbear-2016.74.tar.bz2
+bzip2 -cd dropbear-2016.74.tar.bz2 | tar xvf -
+cd dropbear-2016.74
 ./configure
 make && make install
-mv /usr/sbin/dropbear /usr/sbin/dropbear1
+mv /usr/sbin/dropbear /usr/sbin/dropbear.old
 ln /usr/local/sbin/dropbear /usr/sbin/dropbear
-service dropbear restartgi
+cd && rm -rf dropbear-2016.74 && rm -rf dropbear-2016.74.tar.bz2
+service dropbear restart
 
 # install vnstat gui
 cd /home/vps/public_html/
-wget http://insomnet4u.me/d7fix/vnstat_php_frontend-1.5.1.tar.gz
+wget https://github.com/AnonSecID7IlhamAhmadDevTeam/AutoScriptJualanSSH/raw/master/repo/vnstat_php_frontend-1.5.1.tar.gz
 tar xf vnstat_php_frontend-1.5.1.tar.gz
 rm vnstat_php_frontend-1.5.1.tar.gz
 mv vnstat_php_frontend-1.5.1 vnstat
@@ -426,14 +431,14 @@ service squid3 restart
 
 # install webmin
 cd
-wget "http://insomnet4u.me/d7fix/webmin_1.801_all.deb"
+wget "https://github.com/AnonSecID7IlhamAhmadDevTeam/AutoScriptJualanSSH/raw/master/repo/webmin_1.801_all.deb"
 dpkg --install webmin_1.801_all.deb;
 apt-get -y -f install;
 sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
 rm /root/webmin_1.801_all.deb
 service webmin restart
 service vnstat restart
-
+apt-get -y --force-yes -f install libxml-parser-perl
 
 #Setting IPtables
 cat > /etc/iptables.up.rules <<-END
@@ -451,7 +456,6 @@ cat > /etc/iptables.up.rules <<-END
 -A OUTPUT -d 128.199.149.194 -j DROP
 -A OUTPUT -d 128.199.196.170 -j DROP
 COMMIT
-
 *nat
 :PREROUTING ACCEPT [0:0]
 :OUTPUT ACCEPT [0:0]
@@ -464,18 +468,6 @@ END
 sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 sed -i $MYIP2 /etc/iptables.up.rules;
 iptables-restore < /etc/iptables.up.rules
-
-# text gambar
-apt-get install boxes
-
-# color text
-cd
-rm -rf /root/.bashrc
-wget -O /root/.bashrc "https://raw.githubusercontent.com/redhatz91/m.e.n.u/master/.bashrc"
-
-# install lolcat
-sudo apt-get -y install ruby
-sudo gem install lolcat
 
 # download script
 cd
@@ -547,22 +539,6 @@ chmod +x /usr/bin/clearcache.sh
 chmod +x /usr/bin/bannermenu
 cd
 
-# swap ram
-dd if=/dev/zero of=/swapfile bs=1024 count=1024k
-# buat swap
-mkswap /swapfile
-# jalan swapfile
-swapon /swapfile
-#auto star saat reboot
-wget http://insomnet4u.me/d7fix/fstab
-mv ./fstab /etc/fstab
-chmod 644 /etc/fstab
-sysctl vm.swappiness=10
-#permission swapfile
-chown root:root /swapfile 
-chmod 0600 /swapfile
-cd
-
 # finalisasi
 apt-get -y autoremove
 chown -R www-data:www-data /home/vps/public_html
@@ -587,12 +563,10 @@ clear
 echo " "
 echo "Instaslasi telah selesai! Mohon baca dan simpan penjelasan setup server!"
 echo " "
-echo "--------------------------- Penjelasan Setup Server ----------------------------"
-echo "                           Auto Script By OrangkuatsabahanTerkini                            "
 echo "--------------------------------------------------------------------------------"
 echo ""  | tee -a log-install.txt
 echo "Informasi Server"  | tee -a log-install.txt
-echo "   - Timezone    : Asia/Jakarta (GMT +7)"  | tee -a log-install.txt
+echo "   - Timezone    : Asia/Kuala_Lumpur (GMT +7)"  | tee -a log-install.txt
 echo "   - Fail2Ban    : [on]"  | tee -a log-install.txt
 echo "   - IPtables    : [on]"  | tee -a log-install.txt
 echo "   - Auto-Reboot : [off]"  | tee -a log-install.txt
@@ -602,7 +576,7 @@ echo "Informasi Aplikasi & Port"  | tee -a log-install.txt
 echo "   - OpenVPN     : TCP 1194 "  | tee -a log-install.txt
 echo "   - OpenSSH     : 22, 143"  | tee -a log-install.txt
 echo "   - Dropbear    : 109, 110, 443"  | tee -a log-install.txt
-echo "   - Squid Proxy : 80, 8000, 8080 (limit to IP Server)"  | tee -a log-install.txt
+echo "   - Squid Proxy : 80, 3128, 8000, 8080 (limit to IP Server)"  | tee -a log-install.txt
 echo "   - Badvpn      : 7300"  | tee -a log-install.txt
 echo "   - Nginx       : 85"  | tee -a log-install.txt
 echo "   - PPTP VPN    : 1732"  | tee -a log-install.txt
@@ -617,6 +591,8 @@ echo ""  | tee -a log-install.txt
 echo "Informasi Premium Script"  | tee -a log-install.txt
 echo "   Perintah untuk menampilkan daftar perintah: menu"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
+echo "   Penjelasan script dan setup VPS"| tee -a log-install.txt
+echo ""  | tee -a log-install.txt
 echo "Informasi Penting"  | tee -a log-install.txt
 echo "   - Download Config OpenVPN : http://$MYIP:85/client.ovpn"  | tee -a log-install.txt
 echo "     Mirror (*.tar.gz)       : http://$MYIP:85/openvpn.tar.gz"  | tee -a log-install.txt
@@ -626,4 +602,4 @@ echo "   - MRTG                    : http://$MYIP:85/mrtg/"  | tee -a log-instal
 echo "   - Log Instalasi           : cat /root/log-install.txt"  | tee -a log-install.txt
 echo "     NB: User & Password Webmin adalah sama dengan user & password root"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
-echo "----------- Script Modified By OrangkuatsabahanTerkini ------------"
+echo "----------- Script Created By OrangKuatSabahanTerkini) ------------"
