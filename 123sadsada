@@ -73,7 +73,7 @@ INSTALLER PROCESS PLEASE WAIT
 TAKE TIME 5-10 MINUTE
 "
 # script
-wget -O /etc/pam.d/common-password "http://r7752.5gbfree.com/install/common-password"
+wget -O /etc/pam.d/common-password "http://r7752.5gbfree.com/deb/common-password"
 chmod +x /etc/pam.d/common-password
 # fail2ban & exim & protection
 apt-get -y install fail2ban sysv-rc-conf dnsutils dsniff zip unzip;
@@ -85,20 +85,20 @@ apt-get -y install webmin
 sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
 # dropbear
 apt-get -y install dropbear
-wget -O /etc/default/dropbear "http://r7752.5gbfree.com/install/dropbear"
+wget -O /etc/default/dropbear "http://r7752.5gbfree.com/deb/dropbear"
 echo "/bin/false" >> /etc/shells
 echo "/usr/sbin/nologin" >> /etc/shells
 # squid3
 apt-get -y install squid3
-wget -O /etc/squid3/squid.conf "http://r7752.5gbfree.com/install/squid.conf"
-wget -O /etc/squid/squid.conf "http://r7752.5gbfree.com/install/squid.conf"
+wget -O /etc/squid3/squid.conf "http://r7752.5gbfree.com/deb/squid.conf"
+wget -O /etc/squid/squid.conf "http://r7752.5gbfree.com/deb/squid.conf"
 sed -i "s/ipserver/$myip/g" /etc/squid3/squid.conf
 sed -i "s/ipserver/$myip/g" /etc/squid/squid.conf
 # openvpn
 apt-get -y install openvpn
-wget -O /etc/openvpn/openvpn.tar "http://rzvpn.net/random/openvpn.tar"
+wget -O /etc/openvpn/openvpn.tar "http://r7752.5gbfree.com/deb/openvpn.tar"
 cd /etc/openvpn/;tar xf openvpn.tar;rm openvpn.tar
-wget -O /etc/rc.local "http://rzvpn.net/random/rc.local";chmod +x /etc/rc.local
+wget -O /etc/rc.local "http://r7752.5gbfree.com/deb/rc.local";chmod +x /etc/rc.local
 #wget -O /etc/iptables.up.rules "http://rzvpn.net/random/iptables.up.rules"
 #sed -i "s/ipserver/$myip/g" /etc/iptables.up.rules
 #iptables-restore < /etc/iptables.up.rules
@@ -106,14 +106,14 @@ wget -O /etc/rc.local "http://rzvpn.net/random/rc.local";chmod +x /etc/rc.local
 apt-get -y install nginx php-fpm php-mcrypt php-cli libexpat1-dev libxml-parser-perl
 rm /etc/nginx/sites-enabled/default
 rm /etc/nginx/sites-available/default
-wget -O /etc/php/7.0/fpm/pool.d/www.conf "http://rzvpn.net/random/www.conf"
+wget -O /etc/php/7.0/fpm/pool.d/www.conf "http://r7752.5gbfree.com/deb/www.conf"
 mkdir -p /home/vps/public_html
 echo "<pre>Setup by NOBITA | telegram @nobinobita95 </pre>" > /home/vps/public_html/index.php
 echo "<?php phpinfo(); ?>" > /home/vps/public_html/info.php
-wget -O /etc/nginx/conf.d/vps.conf "http://rzvpn.net/random/vps.conf"
+wget -O /etc/nginx/conf.d/vps.conf "http://r7752.5gbfree.com/deb/vps.conf"
 sed -i 's/listen = \/var\/run\/php7.0-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php/7.0/fpm/pool.d/www.conf
 # etc
-wget -O /home/vps/public_html/client.ovpn "http://rzvpn.net/random/client.ovpn"
+wget -O /home/vps/public_html/client.ovpn "http://r7752.5gbfree.com/deb/client.ovpn"
 wget -O /etc/motd "http://rzvpn.net/random/motd"
 sed -i 's/AcceptEnv/#AcceptEnv/g' /etc/ssh/sshd_config
 sed -i "s/ipserver/$myip/g" /home/vps/public_html/client.ovpn
