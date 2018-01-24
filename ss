@@ -8,34 +8,8 @@ echo "Sorry, for run the script please using root user"
 exit 1
 fi
 
-if [[ $USER != "root" ]]; then
-	echo "Maaf, Anda harus menjalankan ini sebagai root"
-	exit
-fi
-
-# initialisasi var
-export DEBIAN_FRONTEND=noninteractive
-OS=`uname -m`;
-MYIP=$(wget -qO- ipv4.icanhazip.com);
-MYIP2="s/xxxxxxxxx/$MYIP/g";
-ether=`ifconfig | cut -c 1-8 | sort | uniq -u | grep venet0 | grep -v venet0:`
-if [[ $ether = "" ]]; then
-        ether=eth0
-fi
-
-#vps="zvur";
-vps="aneka";
-
-if [[ $vps = "zvur" ]]; then
-	source="https://raw.githubusercontent.com/sslmode/sslmode/master/tools"
-else
-	source="http://r7752.5gbfree.com/install"
-fi
-
 # go to root
-cd
-
-	
+cd	
 exit 2
 fi 
 if [[ ! -e /dev/net/tun ]]; then
@@ -93,7 +67,7 @@ INSTALLER PROCESS PLEASE WAIT
 TAKE TIME 5-10 MINUTE
 "
 # script
-wget -O /etc/pam.d/common-password $source/common-password
+wget -O /etc/pam.d/common-password "http://r7752.5gbfree.com/install/common-password"
 chmod +x /etc/pam.d/common-password
 # fail2ban & exim & protection
 apt-get -y install fail2ban sysv-rc-conf dnsutils dsniff zip unzip;
@@ -105,35 +79,35 @@ apt-get -y install webmin
 sed -i 's/ssl=1/ssl=0/g' /etc/webmin/miniserv.conf
 # dropbear
 apt-get -y install dropbear
-wget -O /etc/default/dropbear $source/dropbear
+wget -O /etc/default/dropbear "http://r7752.5gbfree.com/install/dropbear"
 echo "/bin/false" >> /etc/shells
 echo "/usr/sbin/nologin" >> /etc/shells
 # squid3
 apt-get -y install squid3
-wget -O /etc/squid3/squid.conf $source/squid.conf
-wget -O /etc/squid/squid.conf $source/squid.conf
+wget -O /etc/squid3/squid.conf "http://r7752.5gbfree.com/install/squid.conf"
+wget -O /etc/squid/squid.conf "http://r7752.5gbfree.com/install/squid.conf"
 sed -i "s/ipserver/$myip/g" /etc/squid3/squid.conf
 sed -i "s/ipserver/$myip/g" /etc/squid/squid.conf
 # openvpn
 apt-get -y install openvpn
-wget -O /etc/openvpn/openvpn.tar $source/opennvpn.tar
+wget -O /etc/openvpn/openvpn.tar http://r7752.5gbfree.com/install/opennvpn.tar
 cd /etc/openvpn/;tar xf openvpn.tar;rm openvpn.tar
-wget -O /etc/rc.local  $source/rc.local";chmod +x /etc/rc.local
-#wget -O /etc/iptables.up.rules  $source/iptables.up.rules
+wget -O /etc/rc.local "http://r7752.5gbfree.com/installrc.local";chmod +x /etc/rc.local
+#wget -O /etc/iptables.up.rules "http://r7752.5gbfree.com/install/iptables.up.rules"
 #sed -i "s/ipserver/$myip/g" /etc/iptables.up.rules
 #iptables-restore < /etc/iptables.up.rules
 # nginx
 apt-get -y install nginx php-fpm php-mcrypt php-cli libexpat1-dev libxml-parser-perl
 rm /etc/nginx/sites-enabled/default
 rm /etc/nginx/sites-available/default
-wget -O /etc/php/7.0/fpm/pool.d/www.conf $source/www.conf
+wget -O /etc/php/7.0/fpm/pool.d/www.conf "http://r7752.5gbfree.com/install/www.conf"
 mkdir -p /home/vps/public_html
 echo "<pre>Setup by Fluxo | telegram @OrangKuatSabahanTerkini </pre>" > /home/vps/public_html/index.php
 echo "<?php phpinfo(); ?>" > /home/vps/public_html/info.php
-wget -O /etc/nginx/conf.d/vps.conf $source/vps.conf
+wget -O /etc/nginx/conf.d/vps.conf "http://r7752.5gbfree.com/install/vps.conf"
 sed -i 's/listen = \/var\/run\/php7.0-fpm.sock/listen = 127.0.0.1:9000/g' /etc/php/7.0/fpm/pool.d/www.conf
 # etc
-wget -O /home/vps/public_html/client.ovpn $source/client.ovpn
+wget -O /home/vps/public_html/client.ovpn "http://r7752.5gbfree.com/install/client.ovpn"
 sed -i 's/AcceptEnv/#AcceptEnv/g' /etc/ssh/sshd_config
 sed -i "s/ipserver/$myip/g" /home/vps/public_html/client.ovpn
 useradd -m -g users -s /bin/bash ARCHANGELS
@@ -142,7 +116,7 @@ echo "UPDATE AND INSTALL COMPLETE COMPLETE 99% BE PATIENT"
 cd;rm *.sh;rm *.txt;rm *.tar;rm *.deb;rm *.asc;rm *.zip;rm ddos*;
 # Badvpn
 apt-get -y install cmake make gcc
-wget  $source/badvpn-1.999.127.tar.bz2
+wget http://r7752.5gbfree.com/install/badvpn-1.999.127.tar.bz2
 tar xf badvpn-1.999.127.tar.bz2
 mkdir badvpn-build
 cd badvpn-build
@@ -155,7 +129,7 @@ clear
 apt-get update
 apt-get upgrade
 apt-get install stunnel4
-wget -O /etc/stunnel/stunnel.conf $source/stunnel.conf"
+wget -O /etc/stunnel/stunnel.conf http://r7752.5gbfree.com/install/stunnel.conf"
 openssl genrsa -out key.pem 2048
 openssl req -new -x509 -key key.pem -out cert.pem -days 1095
 cat key.pem cert.pem >> /etc/stunnel/stunnel.pem
